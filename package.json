@@ -5,8 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx ts-node server.ts",
-    "build": "tsc build.ts && node build.js && rm build.js",
-    "clean": "rm server.js"
+    "build": "tsc build.ts && node build.js",
+    "clean": "rm server.js build.js"
   },
   "keywords": [],
   "author": "",
@@ -17,8 +17,12 @@
     "ws": "^8.18.2"
   },
   "devDependencies": {
+    "@types/less": "^3.0.8",
     "@types/node": "^22.15.15",
+    "autoprefixer": "^10.4.21",
+    "cssnano": "^7.0.7",
     "esbuild": "^0.25.4",
+    "esbuild-plugin-postcss": "^0.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

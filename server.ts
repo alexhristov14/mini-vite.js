@@ -45,6 +45,22 @@ const server = createServer(async (req: any, res: any) => {
     return;
   }
 
+  if (ext === ".css") {
+    try {
+      const content = await readFile(filePath, "utf-8");
+      res.writeHead(200, {
+        "Content-Type": "text/css",
+      });
+
+      res.end(content);
+    } catch (err) {
+      res.writeHead(500);
+      res.end("Error reading CSS file");
+      console.error(err);
+    }
+    return;
+  }
+
   try {
     const content = await readFile(filePath, "utf-8");
     res.writeHead(200, {
