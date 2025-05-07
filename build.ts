@@ -9,7 +9,7 @@ const run = async () => {
   await copyFile("public/index.html", "dist/index.html");
 
   await build({
-    entryPoints: ["src/main.ts", "src/styles.css"],
+    entryPoints: ["src/main.ts"],
     bundle: true,
     minify: true,
     outfile: "dist/main.js",

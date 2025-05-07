@@ -20,11 +20,23 @@ const server = createServer(async (req: any, res: any) => {
     return;
   }
 
+  console.log(filePath);
+
   const ext = path.extname(filePath);
 
   if (ext === ".ts") {
     try {
-      const tsContent = await readFile(filePath, "utf-8");
+      let tsContent = await readFile(filePath, "utf-8");
+
+      const regex = /^import\s.*['"].*\.css['"];?$/gm;
+      const matches = [...tsContent.matchAll(regex)];
+
+      matches.forEach((match) => {
+        tsContent = tsContent.replace(match, "");
+      });
+
+      console.log("TsContent: ", tsContent);
+
       const result = await esbuild.transform(tsContent, {
         loader: "ts",
         format: "esm",
