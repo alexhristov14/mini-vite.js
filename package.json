@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx ts-node server.ts",
-    "build": "tsc build.ts && node build.js && rm build.js"
+    "build": "tsc build.ts && node build.js && rm build.js",
+    "clean": "rm server.js"
   },
   "keywords": [],
   "author": "",
