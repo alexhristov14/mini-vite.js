@@ -9,32 +9,5 @@
   <body>
     <h1>Hello World</h1>
     <script type="module" src="/src/main.ts"></script>
-    <!-- <script>
-      const socket = new WebSocket("ws://localhost:3001");
-      socket.onmessage = (event) => {
-        const { type, path } = JSON.parse(event.data);
-
-        if (type !== "reload") return;
-        if (path.endsWith("index.html")) location.reload();
-        if (path.endsWith(".css")) {
-          const oldLink = document.querySelector(`link[href='${path}']`);
-          if (oldLink) oldLink.remove();
-
-          const newLink = document.createElement("link");
-          newLink.rel = "stylesheet";
-          newLink.href = path;
-          document.head.appendChild(newLink);
-          console.log("[HMR] change CSS file: " + path);
-        }
-        if (path.endsWith(".js") || path.endsWith(".ts")) {
-          const oldScript = document.querySelector(`script[src='${path}']`);
-          if (oldScript) oldScript.remove();
-
-          const newScript = document.createElement("script");
-          newScript.src = path;
-          document.body.appendChild(newScript);
-        }
-      };
-    </script> -->
   </body>
 </html>
