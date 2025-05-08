@@ -1,8 +1,10 @@
 const { readFile } = require("fs/promises");
 const { createServer } = require("http");
-const path = require("path");
 const { existsSync } = require("fs");
+const path = require("path");
 const esbuild = require("esbuild");
+const ws = require("ws");
+const chokidar = require("chokidar");
 
 const mimeTypes: Record<string, string> = {
   ".html": "text/html",
@@ -14,13 +16,50 @@ const server = createServer(async (req: any, res: any) => {
   let filePath = req.url === "/" ? "/public/index.html" : req.url!;
   filePath = path.join(__dirname, filePath);
 
+  // Adding a Web Socket client for HMR
+  if (filePath.endsWith("index.html")) {
+    let html = await readFile(filePath, "utf-8");
+    const HMRtemplate = `
+    <script>
+      const socket = new WebSocket("ws://localhost:3001");
+      socket.onmessage = (event) => {
+        const { type, path } = JSON.parse(event.data);
+
+        if (type !== "reload") return;
+        if (path.endsWith("index.html")) location.reload();
+        if (path.endsWith(".css")) {
+          const oldLink = document.querySelector(\`link[href='${path}']\`);
+          if (oldLink) oldLink.remove();
+
+          const newLink = document.createElement("link");
+          newLink.rel = "stylesheet";
+          newLink.href = path;
+          document.head.appendChild(newLink);
+          console.log("[HMR] change CSS file: " + path);
+        }
+        if (path.endsWith(".js") || path.endsWith(".ts")) {
+          const oldScript = document.querySelector(\`script[src='${path}']\`);
+          if (oldScript) oldScript.remove();
+
+          const newScript = document.createElement("script");
+          newScript.src = path;
+          document.body.appendChild(newScript);
+        }
+      };
+    </script></body>
+    `;
+
+    html = html.replace("</body>", HMRtemplate);
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(html);
+    return;
+  }
+
   if (!existsSync(filePath)) {
     res.writeHead(404);
     res.end("Not found");
     return;
   }
-
-  console.log(filePath);
 
   const ext = path.extname(filePath);
 
@@ -34,8 +73,6 @@ const server = createServer(async (req: any, res: any) => {
       matches.forEach((match) => {
         tsContent = tsContent.replace(match, "");
       });
-
-      console.log("TsContent: ", tsContent);
 
       const result = await esbuild.transform(tsContent, {
         loader: "ts",
@@ -88,4 +125,18 @@ const server = createServer(async (req: any, res: any) => {
 
 server.listen(3000, () => {
   console.log("Mini Vite dev server running at http://localhost:3000");
+});
+
+const wss = new ws.Server({ port: 3001 });
+
+function broadcastReload(path: string) {
+  const msg = JSON.stringify({ type: "reload", path });
+  wss.clients.forEach((client: any) => {
+    if (client.readyState === ws.OPEN) client.send(msg);
+  });
+}
+
+chokidar.watch(["src", "public"]).on("change", (filePath: string) => {
+  console.log(`[HMR] File changed: ${filePath}`);
+  broadcastReload(filePath);
 });
